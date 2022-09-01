@@ -36,7 +36,18 @@ static char ** path_table;
  */
 int init_path(void) {
   /* Lab 0: Your code here */
-
+  char *pathString = (char *) malloc(2048 * sizeof(char));
+  path_table = (char **) malloc(16 * sizeof(char*));
+  strcpy(pathString, getenv("PATH"));
+  // printf("%s\n", pathString);
+  char* token = strtok(pathString, ":");
+  int i = 0;
+  while(token != NULL){
+    path_table[i] = token;
+    i++;
+    // printf("%s\n", token); 
+    token = strtok(NULL, ":");
+  }
   return 0;
 }
 
@@ -45,7 +56,7 @@ int init_path(void) {
  */
 void print_path_table() {
   if (path_table == NULL) {
-    printf("XXXXXXX Path Table Not Initialized XXXXX\n");
+    erintf("XXXXXXX Path Table Not Initialized XXXXX\n");
     return;
   }
 
@@ -55,4 +66,3 @@ void print_path_table() {
   }
   printf("===== End Path Table =====\n");
 }
-
