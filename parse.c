@@ -150,6 +150,19 @@ int parse_line (char *inbuf, size_t length,
 		char *commands [MAX_PIPELINE][MAX_ARGS],
 		char **infile, char **outfile) {
 
-  // Lab 0: Your code here
+  char* token = strtok(inbuf, " ");
+  int i = 0, j = 0;
+  commands[i][j] = token;
+  while(token != NULL){
+    if(token[0] == '|'){
+      i++;
+      j=0;
+    } else {
+      commands[i][j++] = token;
+    }
+    token = strtok(NULL, " ");
+  }
+  commands[++i][0] = '\0';
+  return i;
   return -ENOSYS;
 }
