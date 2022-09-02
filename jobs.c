@@ -34,19 +34,30 @@ static char ** path_table;
  *
  * Returns 0 on success, -errno on failure.
  */
+int includeNull(void){
+  char *strEnv = getenv("PATH");
+  for(int i = 0; i < strlen(strEnv)-1; i++){
+    if(strEnv[i] == ':' && strEnv[i+1] == ':'){
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int init_path(void) {
   /* Lab 0: Your code here */
   char *pathString = (char *) malloc(2048 * sizeof(char));
   path_table = (char **) malloc(16 * sizeof(char*));
   strcpy(pathString, getenv("PATH"));
-  // printf("%s\n", pathString);
+  
   char* token = strtok(pathString, ":");
   int i = 0;
   while(token != NULL){
-    path_table[i] = token;
-    i++;
-    // printf("%s\n", token); 
+    path_table[i++] = token; 
     token = strtok(NULL, ":");
+  }
+  if (includeNull()){
+    path_table[i++] = "./";
   }
   return 0;
 }
@@ -56,7 +67,7 @@ int init_path(void) {
  */
 void print_path_table() {
   if (path_table == NULL) {
-    erintf("XXXXXXX Path Table Not Initialized XXXXX\n");
+    printf("XXXXXXX Path Table Not Initialized XXXXX\n");
     return;
   }
 
