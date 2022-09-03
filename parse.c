@@ -5,6 +5,7 @@
  */
 
 #include "thsh.h"
+#include <stdlib.h>
 
 /* This function returns one line from input_fd
  *
@@ -146,20 +147,68 @@ int read_one_line(int input_fd, char *buf, size_t size) {
  *               In the case of a line with no actual commands (e.g.,
  *               a line with just comments), return 0.
  */
+
+// insert a space before and after #, |, >, < to make parasable with strtok
+char* addSpaces(char* buff){
+  int sCount = 0;
+  int buffLen = strlen(buff);
+  for(int i = 0; i<buffLen; i++){
+    if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
+      sCount++;
+    }
+  }
+  int newBuffLen = buffLen+2*sCount; // new buffer length is the old + 2 spaces per special char
+  char* spacedBuffer = (char* ) malloc(newBuffLen*sizeof(char));
+  if (sCount){
+    int k=0;
+    for(int i = 0; i<buffLen; i++){
+      if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
+	spacedBuffer[k++] = ' ';
+	spacedBuffer[k++] = buff[i];
+	spacedBuffer[k++] = ' ';
+      } else {
+	spacedBuffer[k++] = buff[i];
+      }
+    }
+    spacedBuffer[k] = '\0';
+    return spacedBuffer;
+  }  
+  return buff;
+}
+
 int parse_line (char *inbuf, size_t length,
 		char *commands [MAX_PIPELINE][MAX_ARGS],
 		char **infile, char **outfile) {
 
+  inbuf = addSpaces(inbuf);
   char* token = strtok(inbuf, " ");
+  char* prev;
   int i = 0, j = 0;
   commands[i][j] = token;
   while(token != NULL){
-    if(token[0] == '|'){
-      i++;
-      j=0;
+    if(prev != NULL && prev[0] == '>'){
+      outfile[0] = token;
+    } else if (prev != NULL && prev[0] == '<') {
+      infile[0] = token;
     } else {
-      commands[i][j++] = token;
+      if(token[0] == '|'){
+	commands[i][j] = '\0'; //set end of previous buffer to terminating character
+	i++;
+	j=0;
+      } else if (token[0] == '#'){
+	commands[i][j] = '\0';
+	break;
+      } else if (token[0] == '<') {
+	i++;
+	j=0;
+      } else if (token[0] == '>'){ // ls > out.txt
+	i++;
+	j=0;
+      }else {
+	commands[i][j++] = token;
+      }
     }
+    prev = token;
     token = strtok(NULL, " ");
   }
   commands[++i][0] = '\0';
