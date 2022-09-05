@@ -16,6 +16,7 @@ int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
 
   // You will implement this in Lab 1.
   // Just return 42 for now (for testing).
+  // printf("cd handled\n");
   return 42;
 }
 
@@ -46,10 +47,19 @@ static struct builtin builtins[] = {{"cd", handle_cd},
  */
 int handle_builtin(char *args[MAX_ARGS], int stdin, int stdout, int *retval) {
   int rv = 0;
-  // Lab 0: Your Code Here
-  // Comment this line once implemented.  This just suppresses
-  // the unused variable warning from the compiler.
-  (void) builtins;
+  int s = sizeof(builtins)/sizeof(builtins[0])-1;
+
+  for(int i = 0; i<s;i++){
+    if (strcmp(args[0],builtins[i].cmd)==0){
+      //printf("found %s\n", builtins[i].cmd);
+      rv = builtins[i].func(args, stdin, stdout);
+
+      //int (*fp)(char *args[MAX_ARGS], int stdin, int stdout);
+      //fp = builtins[i].func;
+      //printf("%p\n", fp);
+      //rv = &fp(args,stdin,stdout);
+    }
+  }
   return rv;
 }
 

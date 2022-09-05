@@ -159,21 +159,20 @@ char* addSpaces(char* buff){
   }
   int newBuffLen = buffLen+2*sCount; // new buffer length is the old + 2 spaces per special char
   char* spacedBuffer = (char* ) malloc(newBuffLen*sizeof(char));
-  if (sCount){
-    int k=0;
-    for(int i = 0; i<buffLen; i++){
-      if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
-	spacedBuffer[k++] = ' ';
-	spacedBuffer[k++] = buff[i];
-	spacedBuffer[k++] = ' ';
-      } else {
-	spacedBuffer[k++] = buff[i];
-      }
-    }
-    spacedBuffer[k] = '\0';
-    return spacedBuffer;
-  }  
-  return buff;
+  
+   int k=0;
+   for(int i = 0; i<buffLen; i++){
+     if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
+       spacedBuffer[k++] = ' ';
+       spacedBuffer[k++] = buff[i];
+       spacedBuffer[k++] = ' ';
+     } else {
+       spacedBuffer[k++] = buff[i];
+     }
+   }
+   spacedBuffer[k-1] = ' '; //overwrite final '\0' to be a space
+   spacedBuffer[k] = '\0'; // then add '\0' after
+  return spacedBuffer;  
 }
 
 int parse_line (char *inbuf, size_t length,
@@ -184,26 +183,20 @@ int parse_line (char *inbuf, size_t length,
   char* token = strtok(inbuf, " ");
   char* prev;
   int i = 0, j = 0;
+  int k = 0, p = 0; //k output p input buffer 
   commands[i][j] = token;
   while(token != NULL){
     if(prev != NULL && prev[0] == '>'){
-      outfile[0] = token;
+      outfile[k++] = token;
     } else if (prev != NULL && prev[0] == '<') {
-      infile[0] = token;
+      infile[p++] = token;
     } else {
-      if(token[0] == '|'){
-	commands[i][j] = '\0'; //set end of previous buffer to terminating character
-	i++;
+      if(token[0] == '|' || token[0] == '<' || token[0] == '>'){
+	commands[i++][j] = '\0'; //set end of previous buffer to terminating character
 	j=0;
       } else if (token[0] == '#'){
 	commands[i][j] = '\0';
 	break;
-      } else if (token[0] == '<') {
-	i++;
-	j=0;
-      } else if (token[0] == '>'){ // ls > out.txt
-	i++;
-	j=0;
       }else {
 	commands[i][j++] = token;
       }
