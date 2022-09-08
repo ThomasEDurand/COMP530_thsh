@@ -36,7 +36,7 @@ static char ** path_table;
  */
 int includeNull(void){
   char *strEnv = getenv("PATH");
-  for(int i = 0; i < strlen(strEnv)-1; i++){
+  for(int i = 0; i < (int) strlen(strEnv)-1; i++){
     if(strEnv[i] == ':' && strEnv[i+1] == ':'){
       return 1;
     }
@@ -44,17 +44,36 @@ int includeNull(void){
   return 0;
 }
 
+char* rmvSlashes(char *buff){
+    if(buff == NULL){
+        return NULL;
+    }
+    int l = strlen(buff)-1;
+    while(l >= 0 && buff[l] == '/'){
+        l--;
+    }
+    char* newBuff = (char*) malloc((l+1)*sizeof(char));
+    for(int i =0; i<=l;i++){
+        newBuff[i] = buff[i];
+    }
+    newBuff[++l] = '\0';
+    return newBuff;
+}
+
 int init_path(void) {
   /* Lab 0: Your code here */
-  char *pathString = (char *) malloc(2048 * sizeof(char));
-  path_table = (char **) malloc(16 * sizeof(char*));
+  char *pathString = (char *) malloc(4096 * sizeof(char));
+  path_table = (char **) malloc(64 * sizeof(char*));
   strcpy(pathString, getenv("PATH"));
-  
+
   char* token = strtok(pathString, ":");
+  token = rmvSlashes(token);
   int i = 0;
+
   while(token != NULL){
     path_table[i++] = token; 
     token = strtok(NULL, ":");
+    token = rmvSlashes(token);
   }
   if (includeNull()){
     path_table[i++] = "./";
