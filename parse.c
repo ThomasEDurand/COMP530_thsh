@@ -185,21 +185,24 @@ int parse_line (char *inbuf, size_t length,
   int i = 0, j = 0;
   int k = 0, p = 0; //k output p input buffer 
   commands[i][j] = token;
-  while(token != NULL){
+  while(token != NULL){ 
+    // printf("token: %s\n", token);
     if(prev != NULL && prev[0] == '>'){
       outfile[k++] = token;
     } else if (prev != NULL && prev[0] == '<') {
       infile[p++] = token;
     } else {
-      if(token[0] == '|' || token[0] == '<' || token[0] == '>'){
-	commands[i++][j] = '\0'; //set end of previous buffer to terminating character
-	j=0;
-      } else if (token[0] == '#'){
-	commands[i][j] = '\0';
-	break;
-      }else {
-	commands[i][j++] = token;
-      }
+        if(token[0] == '|'){
+	        commands[i++][j] = '\0'; //set end of previous buffer to terminating character
+	        j=0;
+        } else if(token[0] == '<' || token[0] == '>'){
+            // on next cycle will be processed as prev;
+        } else if (token[0] == '#'){
+            commands[i][j] = '\0';
+            break;
+        } else {
+            commands[i][j++] = token;
+        }
     }
     prev = token;
     token = strtok(NULL, " ");
