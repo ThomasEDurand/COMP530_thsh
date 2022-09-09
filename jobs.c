@@ -36,12 +36,17 @@ static char ** path_table;
  */
 int includeNull(void){
   char *strEnv = getenv("PATH");
+
+  int nullIdx = 0;
+ 
   for(int i = 0; i < (int) strlen(strEnv)-1; i++){
     if(strEnv[i] == ':' && strEnv[i+1] == ':'){
-      return 1;
+      return ++nullIdx;
+    } else if (strEnv[i] == ':') {
+      nullIdx++;
     }
   }
-  return 0;
+  return -1;
 }
 
 char* rmvSlashes(char *buff){
@@ -69,14 +74,14 @@ int init_path(void) {
   char* token = strtok(pathString, ":");
   token = rmvSlashes(token);
   int i = 0;
-
+  int nullIdx = includeNull();
   while(token != NULL){
+    if(i == nullIdx){
+        path_table[i++] = "./";
+    }
     path_table[i++] = token; 
     token = strtok(NULL, ":");
     token = rmvSlashes(token);
-  }
-  if (includeNull()){
-    path_table[i++] = "./";
   }
   return 0;
 }
