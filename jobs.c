@@ -66,7 +66,8 @@ char* rmvSlashes(char *buff){
 }
 
 int init_path(void) {
-  /* Lab 0: Your code here */
+
+  
   char *pathString = (char *) malloc(4096 * sizeof(char));
   path_table = (char **) malloc(64 * sizeof(char*));
   strcpy(pathString, getenv("PATH"));
@@ -142,12 +143,12 @@ int create_job(void) {
   return j->id;
 }
 
-/* Helper function to walk the job list and find                                                                    
- * a given job.                                                                                                     
- *                                                                                                                  
- * remove: If true, remove this job from the job list.                                                              
- *                                                                                                                  
- * Returns NULL on failure, a job pointer on success.                                                               
+/* Helper function to walk the job list and find
+ * a given job.
+ *
+ * remove: If true, remove this job from the job list.
+ *
+ * Returns NULL on failure, a job pointer on success.
  */
 static struct job *find_job(int job_id, bool remove) {
   struct job *tmp, *last = NULL;

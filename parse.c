@@ -93,7 +93,7 @@ int read_one_line(int input_fd, char *buf, size_t size) {
  *
  * The first "special" character to consider is the vertical bar, or "pipe" ('|').
  * This splits a single line into multiple sub-commands that form the pipeline.
- * We will implement pipelines in lab 1, but for now, just use this character to delimit
+ * We will implement pipelines in lab 2, but for now, just use this character to delimit
  * commands.
  *
  * For instance, the command: "ls | grep foo\n" should be broken into:
@@ -209,5 +209,6 @@ int parse_line (char *inbuf, size_t length,
   }
   commands[++i][0] = '\0';
   return i;
+
   return -ENOSYS;
 }

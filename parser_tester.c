@@ -1,6 +1,6 @@
 /* COMP 530: Tar Heel SHell
  *
- * This file is a test harness for the lab0
+ * This file is a test harness for the lab 1
  * parser.  It takes in commands from standard in,
  * passes them to the parser, and outputs the parsed
  * version in a standardized format for unit testing.
@@ -65,7 +65,7 @@ int main(int argc, char **argv, char **envp) {
     }
 
     // If any commands are built-in commands, execute them.
-    // Otherwise, we will handle this in lab 1
+    // Otherwise, we will handle this in lab 2
     for (int i = 0; parsed_commands[i][0]; i++) {
       int rv;
       if (handle_builtin(parsed_commands[i], 0, 1, &rv)) {

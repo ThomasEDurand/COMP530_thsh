@@ -39,7 +39,6 @@ int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
   // Hint: chdir can handle "." and "..", but saving
   //       these results may not be the desired outcome...
 
-  // XXX: Be sure to write test cases for ., .., and weirdness
   // XXX: Test for errors in the output if a cd fails
 
   // Lab 1: Your code here
