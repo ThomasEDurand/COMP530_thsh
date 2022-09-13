@@ -87,13 +87,7 @@ int handle_builtin(char *args[MAX_ARGS], int stdin, int stdout, int *retval) {
       //printf("found %s\n", builtins[i].cmd);
       rv = builtins[i].func(args, stdin, stdout);
       *retval = rv;
-      
-      //printf("%d\n", retval*);
       return 1;
-      //int (*fp)(char *args[MAX_ARGS], int stdin, int stdout);
-      //fp = builtins[i].func;
-      //printf("%p\n", fp);
-      //rv = &fp(args,stdin,stdout);
     }
   }
   return 0;
