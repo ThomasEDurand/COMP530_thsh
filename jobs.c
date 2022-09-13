@@ -34,9 +34,55 @@ static char ** path_table;
  *
  * Returns 0 on success, -errno on failure.
  */
+int includeNull(void){
+  char *strEnv = getenv("PATH");
+
+  int nullIdx = 0;
+ 
+  for(int i = 0; i < (int) strlen(strEnv)-1; i++){
+    if(strEnv[i] == ':' && strEnv[i+1] == ':'){
+      return ++nullIdx;
+    } else if (strEnv[i] == ':') {
+      nullIdx++;
+    }
+  }
+  return -1;
+}
+
+char* rmvSlashes(char *buff){
+    if(buff == NULL){
+        return NULL;
+    }
+    int l = strlen(buff)-1;
+    while(l >= 0 && buff[l] == '/'){
+        l--;
+    }
+    char* newBuff = (char*) malloc((l+1)*sizeof(char));
+    for(int i =0; i<=l;i++){
+        newBuff[i] = buff[i];
+    }
+    newBuff[++l] = '\0';
+    return newBuff;
+}
+
 int init_path(void) {
   /* Lab 0: Your code here */
+  char *pathString = (char *) malloc(4096 * sizeof(char));
+  path_table = (char **) malloc(64 * sizeof(char*));
+  strcpy(pathString, getenv("PATH"));
 
+  char* token = strtok(pathString, ":");
+  token = rmvSlashes(token);
+  int i = 0;
+  int nullIdx = includeNull();
+  while(token != NULL){
+    if(i == nullIdx){
+        path_table[i++] = "./";
+    }
+    path_table[i++] = token; 
+    token = strtok(NULL, ":");
+    token = rmvSlashes(token);
+  }
   return 0;
 }
 
@@ -55,6 +101,7 @@ void print_path_table() {
   }
   printf("===== End Path Table =====\n");
 }
+
 
 
 static int job_counter = 0;
