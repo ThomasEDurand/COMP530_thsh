@@ -12,6 +12,9 @@
 
 #include "thsh.h"
 
+#define MAXPATHLEN 300
+#define MAXNUMTOKENS 30
+
 static char ** path_table;
 
 /* Initialize the table of PATH prefixes.
@@ -34,10 +37,34 @@ static char ** path_table;
  *
  * Returns 0 on success, -errno on failure.
  */
-int init_path(void) {
-  /* Lab 0: Your code here */
 
-  return 0;
+
+int init_path(void) {
+	//copy path to string
+	char *path = malloc(MAXPATHLEN + 1);
+	strcpy(path, getenv("PATH"));	
+
+	//count colons
+	int count = 0;
+	for(int i=0;path[i];i++) {
+		if(path[i]==':') {
+			count++;
+		}
+ 	}
+	
+	//make memory for path table here
+	count = 50;//without this line, we get segfault, why?
+	path_table = (char**) malloc((count + 1 ) * sizeof(char*));
+
+	int i = 0;
+	char *token = strtok(path, ":");
+	while (token != NULL) {
+		//path_table[i++] = (char*)&token;
+		path_table[i++] = token;
+		token=strtok(NULL, ":");
+	}
+
+	return 0;
 }
 
 /* Debug helper function that just prints
@@ -56,3 +83,9 @@ void print_path_table() {
   printf("===== End Path Table =====\n");
 }
 
+int main() { 
+	init_path();
+	print_path_table();
+	free(path_table);
+	return 0;
+}
