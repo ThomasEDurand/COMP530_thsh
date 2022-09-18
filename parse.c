@@ -150,65 +150,61 @@ int read_one_line(int input_fd, char *buf, size_t size) {
 
 // insert a space before and after #, |, >, < to make parasable with strtok
 char* addSpaces(char* buff){
-  int sCount = 0;
-  int buffLen = strlen(buff);
-  for(int i = 0; i<buffLen; i++){
-    if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
-      sCount++;
-    }
-  }
-  int newBuffLen = buffLen+2*sCount; // new buffer length is the old + 2 spaces per special char
-  char* spacedBuffer = (char* ) malloc(newBuffLen*sizeof(char));
-  
-   int k=0;
-   for(int i = 0; i<buffLen; i++){
-     if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
-       spacedBuffer[k++] = ' ';
-       spacedBuffer[k++] = buff[i];
-       spacedBuffer[k++] = ' ';
-     } else {
-       spacedBuffer[k++] = buff[i];
-     }
-   }
-   spacedBuffer[k-1] = ' '; //overwrite final '\0' to be a space
-   spacedBuffer[k] = '\0'; // then add '\0' after
-  return spacedBuffer;  
-}
-
-int parse_line (char *inbuf, size_t length,
-		char *commands [MAX_PIPELINE][MAX_ARGS],
-		char **infile, char **outfile) {
-
-  inbuf = addSpaces(inbuf);
-  char* token = strtok(inbuf, " ");
-  char* prev;
-  int i = 0, j = 0;
-  int k = 0, p = 0; //k output p input buffer 
-  commands[i][j] = token;
-  while(token != NULL){ 
-    // printf("token: %s\n", token);
-    if(prev != NULL && prev[0] == '>'){
-      outfile[k++] = token;
-    } else if (prev != NULL && prev[0] == '<') {
-      infile[p++] = token;
-    } else {
-        if(token[0] == '|'){
-	        commands[i++][j] = '\0'; //set end of previous buffer to terminating character
-	        j=0;
-        } else if(token[0] == '<' || token[0] == '>'){
-            // on next cycle will be processed as prev;
-        } else if (token[0] == '#'){
-            commands[i][j] = '\0';
-            break;
-        } else {
-            commands[i][j++] = token;
+    int sCount = 0;
+    int buffLen = strlen(buff);
+    for(int i = 0; i<buffLen; i++){
+        if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
+            sCount++;
         }
     }
-    prev = token;
-    token = strtok(NULL, " ");
-  }
-  commands[++i][0] = '\0';
-  return i;
+    int newBuffLen = buffLen+2*sCount; // new buffer length is the old + 2 spaces per special char
+    char* spacedBuffer = (char* ) malloc(newBuffLen*sizeof(char));
+  
+    int k=0;
+    for(int i = 0; i<buffLen; i++){
+        if(buff[i] == '#' || buff[i] == '|' || buff[i] == '>' || buff[i] == '<'){
+            spacedBuffer[k++] = ' ';
+            spacedBuffer[k++] = buff[i];
+            spacedBuffer[k++] = ' ';
+        } else {
+            spacedBuffer[k++] = buff[i];
+        }
+    }
+    spacedBuffer[k-1] = ' '; //overwrite final '\0' to be a space
+    spacedBuffer[k] = '\0'; // then add '\0' after
+    return spacedBuffer;  
+}
 
-  return -ENOSYS;
+int parse_line (char *inbuf, size_t length, char *commands [MAX_PIPELINE][MAX_ARGS], char **infile, char **outfile) {
+    inbuf = addSpaces(inbuf);
+    char* token = strtok(inbuf, " ");
+    char* prev;
+    int i = 0, j = 0;
+    int k = 0, p = 0; //k output p input buffer 
+    commands[i][j] = token;
+    while(token != NULL){ 
+    // printf("token: %s\n", token);
+        if(prev != NULL && prev[0] == '>'){
+            outfile[k++] = token;
+        } else if (prev != NULL && prev[0] == '<') {
+            infile[p++] = token;
+        } else {
+            if(token[0] == '|'){
+	        commands[i++][j] = '\0'; //set end of previous buffer to terminating character
+	        j=0;
+            } else if(token[0] == '<' || token[0] == '>'){
+            // on next cycle will be processed as prev;
+            } else if (token[0] == '#'){
+                commands[i][j] = '\0';
+                break;
+            } else {
+                commands[i][j++] = token;
+            }
+        }
+        prev = token;
+        token = strtok(NULL, " ");
+    }
+    commands[++i][0] = '\0';
+    return i;
+    return -ENOSYS;
 }

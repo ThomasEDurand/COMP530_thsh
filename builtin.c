@@ -28,8 +28,6 @@ int init_cwd(void) {
 
 /* Handle a cd command.  */
 int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
-
-
   // Note that you need to handle special arguments, including:
   // "-" switch to the last directory
   // "." switch to the current directory.  This should change the
@@ -39,16 +37,30 @@ int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
   // Hint: chdir can handle "." and "..", but saving
   //       these results may not be the desired outcome...
 
-  // XXX: Test for errors in the output if a cd fails
-
   // Lab 1: Your code here
   //
+  getcwd(cur_path, MAX_INPUT);
+  char* cdArg = args[1]; // cd supports 1 arg
+  char* newCwd;
+  if(cdArg == NULL || cdArg[0] == '\0'){ 
+    newCwd = getenv("HOME");  
+    getcwd(cur_path, MAX_INPUT);
+  } else if (cdArg[0] == '.' && cdArg[1] == '.'){
+    newCwd = "..";
+  } else if (cdArg[0] == '.' && cdArg[1] == '/'){
+    newCwd = cdArg;
+  } else if (cdArg[0] == '-'){
+    newCwd = old_path;
+  } else {
+    newCwd = cdArg;
+  }
 
-  // Remove the following two lines once implemented.  These
-  // just suppress the compiler warning around an unused variable
-  (void) cur_path;
-  (void) old_path;
-
+  if(chdir(newCwd) != 0){
+    printf("chdir failed\n");
+  } else {
+    strcpy(old_path, cur_path);
+    getcwd(cur_path, MAX_INPUT);
+  }
   return 42;
 }
 
@@ -82,8 +94,7 @@ int handle_builtin(char *args[MAX_ARGS], int stdin, int stdout, int *retval) {
   int s = sizeof(builtins)/sizeof(builtins[0])-1;
 
   for(int i = 0; i<s;i++){
-    if (strcmp(args[0],builtins[i].cmd)==0){
-      //printf("found %s\n", builtins[i].cmd);
+    if (strcmp(args[0],builtins[i].cmd)==0){ 
       rv = builtins[i].func(args, stdin, stdout);
       *retval = rv;
       return 1;
@@ -112,7 +123,13 @@ int print_prompt(void) {
   const char *prompt = "thsh> ";
 
   // Lab 1: Your code here
-
+  char * extendedPrompt = malloc(sizeof(char) * (9 + strlen(getenv("PWD")))); // P = 2 bracks + 6 thsh + 1 term
+  strcat(extendedPrompt, "[");  
+  getcwd(cur_path, MAX_INPUT);
+  strcat(extendedPrompt, cur_path);
+  strcat(extendedPrompt, "] ");
+  strcat(extendedPrompt, prompt);
+  prompt = extendedPrompt; 
 
   ret = write(1, prompt, strlen(prompt));
   return ret;

@@ -1,7 +1,6 @@
 /* COMP 530: Tar Heel SHell */
 
 #include "thsh.h"
-
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -18,8 +17,12 @@ int main(int argc, char **argv, char **envp) {
   // Lab 1:
   // Add support for parsing the -d option from the command line
   // and handling the case where a script is passed as input to your shell
-
   // Lab 1: Your code here
+  int debugMode = 0;
+  if(argc>1 && argv!=NULL && argv[1]!=NULL && argv[1][0]=='-' && argv[1][1]=='d' && (argv[1][2]=='\0' || argv[1][2]==' ')){
+    debugMode = 1;
+    printf("Running thsh in debug mode\n");
+  }
 
   ret = init_cwd();
   if (ret) {
@@ -58,7 +61,7 @@ int main(int argc, char **argv, char **envp) {
     // Reset memory from the last iteration
     for(int i = 0; i < MAX_PIPELINE; i++) {
       for(int j = 0; j < MAX_ARGS; j++) {
-	parsed_commands[i][j] = NULL;
+          parsed_commands[i][j] = NULL;
       }
     }
 
@@ -84,7 +87,7 @@ int main(int argc, char **argv, char **envp) {
     //
     // Comment this line once you implement
     // command handling
-    dprintf(1, "%s\n", cmd);
+    // dprintf(1, "%s\n", cmd);
 
     // In Lab 1, you will need to add code to actually run the commands,
     // add debug printing, and handle redirection and pipelines, as
@@ -92,15 +95,27 @@ int main(int argc, char **argv, char **envp) {
     //
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
-    ret = 0;
+    
+    int i = 0;
+    while(i<pipeline_steps){
+        printf("pipeline stage %d\n", i);
+        char* currCmd = parsed_commands[i][0];
+        if(debugMode){
+            fprintf(stderr, "RUNNING:[%s]\n", currCmd);
+        }
+
+        ret = run_command(parsed_commands[i], 0, 0, 0); 
+        if(debugMode){
+            fprintf(stderr, "ENDED:[%s]\n(ret=%d)\n", currCmd, ret);
+        }
+        i++;
+    }
 
     // Do NOT change this if/printf - it is used by the autograder.
     if (ret) {
       printf("Failed to run command - error %d\n", ret);
     }
-
   }
-
   // Only return a non-zero value from main() if the shell itself
   // has a bug.  Do not use this to indicate a failed command.
   return 0;

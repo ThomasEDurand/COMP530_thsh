@@ -66,8 +66,6 @@ char* rmvSlashes(char *buff){
 }
 
 int init_path(void) {
-
-  
   char *pathString = (char *) malloc(4096 * sizeof(char));
   path_table = (char **) malloc(64 * sizeof(char*));
   strcpy(pathString, getenv("PATH"));
@@ -102,7 +100,6 @@ void print_path_table() {
   }
   printf("===== End Path Table =====\n");
 }
-
 
 
 static int job_counter = 0;
@@ -193,9 +190,60 @@ static struct job *find_job(int job_id, bool remove) {
  *
  * Returns 0 on success, -errno on failure
  */
+int attemptExec(char *args[MAX_ARGS], char* prgmPath){ 
+    struct stat buf;
+    if(stat(prgmPath, &buf) == 0){
+        int childPID = fork();
+        if(childPID == 0){
+            execl(prgmPath, *args, (char *) NULL);
+            exit(1);
+        } else {
+            int rv = wait(NULL);
+            free(prgmPath);
+            return rv;
+        }
+    }
+    return 0;
+}
+
 int run_command(char *args[MAX_ARGS], int stdin, int stdout, int job_id) {
   /* Lab 1: Your code here */
   int rv = 0;
+  init_path(); // should be called earlier in thsh.c ?
+  int l = sizeof(path_table)-1; //last entry in terminating char
+  char* prgm = args[0];
+  // Absolute path
+  if(prgm[0] == '.' && prgm[1] == '/'){
+      return attemptExec(args, prgm);
+  }
+  // Check if built in
+  int r = 0;
+
+  int *retval = &r;
+  int builtIn = handle_builtin(args, stdin, stdout, retval);
+  if(builtIn != 0) {
+    return 0;
+  }
+  // Check paths
+  for(int i=0; i<l;i++){
+      char *prgmPath = malloc(strlen(path_table[i]) + strlen(prgm)+2);
+      strcpy(prgmPath, path_table[i]);
+      strcat(prgmPath, "/");
+      strcat(prgmPath, prgm);
+    
+      int rv = attemptExec(args, prgmPath);
+      if(rv != 0){ return 0;} 
+      
+  }
+
+  //if(stdin!=0){
+  //  fclose(&stdin);
+  //}
+  //if(stdin!=1){
+  //  fclose(&stdout);
+  //}
+
+   
 
   // Suppress the compiler warning that find_job is not used in the starer code.
   // You may remove this line if/when you use find_job in your code.
