@@ -70,9 +70,18 @@ int handle_exit(char *args[MAX_ARGS], int stdin, int stdout) {
   return 0; // Does not actually return
 }
 
+/* Handle Go heels */
+int handle_goheels(char *args[MAX_ARGS], int stdin, int stdout) {
+  printf("GO HEELS!\n"); 
+  return 2022; // Does not actually return
+}
+
+
+
 
 
 static struct builtin builtins[] = {{"cd", handle_cd},
+				    {"goheels", handle_goheels},
 				    {"exit", handle_exit},
 				    {NULL, NULL}};
 
