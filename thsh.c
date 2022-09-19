@@ -21,7 +21,15 @@ int main(int argc, char **argv, char **envp) {
   int debugMode = 0;
   if(argc>1 && argv!=NULL && argv[1]!=NULL && argv[1][0]=='-' && argv[1][1]=='d' && (argv[1][2]=='\0' || argv[1][2]==' ')){
     debugMode = 1;
-    printf("Running thsh in debug mode\n");
+    //printf("Running thsh in debug mode\n");
+  }
+
+  FILE * stream;
+  int nonInteractive = 0;
+  if(debugMode != 1 && argv != NULL && argv[1] != NULL){
+      printf("interactive mode\n");
+      nonInteractive = 1;
+      stream = fopen(argv[1], "r");
   }
 
   ret = init_cwd();
@@ -34,10 +42,9 @@ int main(int argc, char **argv, char **envp) {
   if (ret) {
     printf("Error initializing the path table: %d\n", ret);
     return ret;
-  }
-
-  while (!finished) {
-
+  } 
+  
+   while (!finished) {
     int length;
     // Buffer to hold input
     char cmd[MAX_INPUT];
@@ -51,10 +58,10 @@ int main(int argc, char **argv, char **envp) {
     if (!input_fd) {
       ret = print_prompt();
       if (ret <= 0) {
-	// if we printed 0 bytes, this call failed and the program
-	// should end -- this will likely never occur.
-	finished = true;
-	break;
+	    // if we printed 0 bytes, this call failed and the program
+	    // should end -- this will likely never occur.
+	    finished = true;
+	    break;
       }
     }
 
@@ -64,21 +71,30 @@ int main(int argc, char **argv, char **envp) {
           parsed_commands[i][j] = NULL;
       }
     }
-
-    // Read a line of input
-    length = read_one_line(input_fd, buf, MAX_INPUT);
-    if (length <= 0) {
-      ret = length;
-      break;
+    
+    if(nonInteractive==1){
+        char line[MAX_PIPELINE];
+        if(fgets(line, MAX_PIPELINE, stream)==NULL){
+            return 0;
+        };
+        char * newLine = malloc(sizeof(line));
+        strcpy(newLine, line);
+        pipeline_steps = parse_line(newLine, 0, parsed_commands, &infile, &outfile);
     }
-
-    // Pass it to the parser
-    pipeline_steps = parse_line(buf, length, parsed_commands, &infile, &outfile);
-    if (pipeline_steps < 0) {
-      printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
-      continue;
+    else {
+        // Read a line of input
+        length = read_one_line(input_fd, buf, MAX_INPUT);
+        if (length <= 0) {
+            ret = length;
+            break;
+        }
+        // Pass it to the parser
+        pipeline_steps = parse_line(buf, length, parsed_commands, &infile, &outfile);
+        if (pipeline_steps < 0) {
+            printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
+            continue;
+        }
     }
-
     // Just echo the command line for now
     // file descriptor 1 -> writing to stdout
     // print the whole cmd string (write number of
@@ -98,13 +114,22 @@ int main(int argc, char **argv, char **envp) {
     
     int i = 0;
     while(i<pipeline_steps){
-        printf("pipeline stage %d\n", i);
-        char* currCmd = parsed_commands[i][0];
+        char *currCmd = parsed_commands[i][0];
         if(debugMode){
             fprintf(stderr, "RUNNING:[%s]\n", currCmd);
         }
 
-        ret = run_command(parsed_commands[i], 0, 0, 0); 
+        int infileFD = open(infile, O_RDWR);
+        if(infile == NULL || infileFD == -1){
+            infileFD = STDIN_FILENO;
+        }
+
+        int outfileFD = open(outfile, O_RDWR);
+        if(outfile == NULL || outfileFD == -1){
+            outfileFD = STDOUT_FILENO;
+        }
+
+        ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
         if(debugMode){
             fprintf(stderr, "ENDED:[%s]\n(ret=%d)\n", currCmd, ret);
         }

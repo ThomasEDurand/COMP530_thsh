@@ -190,12 +190,20 @@ static struct job *find_job(int job_id, bool remove) {
  *
  * Returns 0 on success, -errno on failure
  */
-int attemptExec(char *args[MAX_ARGS], char* prgmPath){ 
+int attemptExec(char *args[MAX_ARGS], char* prgmPath, int stdinFD, int stdoutFD){
     struct stat buf;
     if(stat(prgmPath, &buf) == 0){
         int childPID = fork();
         if(childPID == 0){
-            execl(prgmPath, *args, (char *) NULL);
+            if(stdinFD!=STDIN_FILENO){
+                dup2(stdinFD,stdinFD);
+                close(stdinFD);
+            }
+            if(stdoutFD != STDOUT_FILENO){
+                dup2(stdoutFD,STDOUT_FILENO);
+                close(stdoutFD);
+            }
+            execv(prgmPath, args);
             exit(1);
         } else {
             int rv = wait(NULL);
@@ -206,21 +214,20 @@ int attemptExec(char *args[MAX_ARGS], char* prgmPath){
     return 0;
 }
 
-int run_command(char *args[MAX_ARGS], int stdin, int stdout, int job_id) {
+int run_command(char *args[MAX_ARGS], int stdinFD, int stdoutFD, int job_id) {
   /* Lab 1: Your code here */
   int rv = 0;
-  init_path(); // should be called earlier in thsh.c ?
   int l = sizeof(path_table)-1; //last entry in terminating char
   char* prgm = args[0];
+  
   // Absolute path
-  if(prgm[0] == '.' && prgm[1] == '/'){
-      return attemptExec(args, prgm);
-  }
+  int r = attemptExec(args, prgm, stdinFD, stdoutFD);
+  if(r!=0){return 0;}
+ 
   // Check if built in
-  int r = 0;
-
+  r = 0;
   int *retval = &r;
-  int builtIn = handle_builtin(args, stdin, stdout, retval);
+  int builtIn = handle_builtin(args, stdinFD, stdoutFD, retval);
   if(builtIn != 0) {
     return 0;
   }
@@ -231,22 +238,12 @@ int run_command(char *args[MAX_ARGS], int stdin, int stdout, int job_id) {
       strcat(prgmPath, "/");
       strcat(prgmPath, prgm);
     
-      int rv = attemptExec(args, prgmPath);
-      if(rv != 0){ return 0;} 
-      
+      int rv = attemptExec(args, prgmPath, stdinFD, stdoutFD);
+      if(rv != 0){ return 0;}  
   }
-
-  //if(stdin!=0){
-  //  fclose(&stdin);
-  //}
-  //if(stdin!=1){
-  //  fclose(&stdout);
-  //}
-
-   
-
   // Suppress the compiler warning that find_job is not used in the starer code.
   // You may remove this line if/when you use find_job in your code.
+  printf("Could not find command %s\n", args[0]);
   (void)&find_job;
   return rv;
 }
