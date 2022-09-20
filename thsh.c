@@ -124,7 +124,7 @@ int main(int argc, char **argv, char **envp) {
 //        printf("pipeline stage %d\n", i);
         char *currCmd = parsed_commands[i][0];
         if(debugMode){
-            fprintf(stderr, "RUNNING:[%s]\n", currCmd);
+            fprintf(stderr, "RUNNING: [%s]\n", currCmd);
         }
         
         if(inPipe==0){
@@ -162,7 +162,7 @@ int main(int argc, char **argv, char **envp) {
         }
  
         if(debugMode){
-            fprintf(stderr, "ENDED:[%s]\n(ret=%d)\n", currCmd, ret);
+            fprintf(stderr, "ENDED: [%s] (ret=%d)\n", currCmd, ret);
         }
         i++;
     }
