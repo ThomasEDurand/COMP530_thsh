@@ -27,7 +27,7 @@ int main(int argc, char **argv, char **envp) {
   FILE * stream;
   int nonInteractive = 0;
   if(debugMode != 1 && argv != NULL && argv[1] != NULL){
-      printf("interactive mode\n");
+//      printf("interactive mode\n");
       nonInteractive = 1;
       stream = fopen(argv[1], "r");
   }
@@ -114,6 +114,7 @@ int main(int argc, char **argv, char **envp) {
     int inPipe = 0;
     if (pipeline_steps>1){
        inPipe = 1;
+
     }
 
     int infileFD = STDIN_FILENO;
@@ -121,17 +122,20 @@ int main(int argc, char **argv, char **envp) {
     int i=0;
     char pipeline[4096*4];
     while(i<pipeline_steps){
-//        printf("pipeline stage %d\n", i);
+        if(parsed_commands[i] == NULL || parsed_commands[i][0] == NULL){ // Handle empty commands and comments
+            i++;
+            ret = 0;
+            continue;
+        }
         char *currCmd = malloc(sizeof(parsed_commands[i][0]));
         strcpy(currCmd, parsed_commands[i][0]);
         if(debugMode){
             fprintf(stderr, "RUNNING: [%s]\n", currCmd);
         }
-        
         if(inPipe==0){
             int infileFD = open(infile, O_RDWR);
             if(infile == NULL || infileFD == -1){
-  //              printf("infile null\n");
+ //               printf("infile null\n");
                 infileFD = STDIN_FILENO;
             }
             outfileFD = open(outfile, O_RDWR);

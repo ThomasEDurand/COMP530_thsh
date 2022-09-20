@@ -219,6 +219,7 @@ int run_command(char *args[MAX_ARGS], int stdinFD, int stdoutFD, int job_id) {
   int rv = 0;
   int l = sizeof(path_table)-1; //last entry in terminating char
   char* prgm = args[0];
+
   
   // Absolute path
   int r = attemptExec(args, prgm, stdinFD, stdoutFD);
