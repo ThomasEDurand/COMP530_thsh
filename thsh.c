@@ -90,6 +90,8 @@ int main(int argc, char **argv, char **envp) {
         }
         // Pass it to the parser
         pipeline_steps = parse_line(buf, length, parsed_commands, &infile, &outfile);
+
+        
         if (pipeline_steps < 0) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
@@ -111,61 +113,47 @@ int main(int argc, char **argv, char **envp) {
     //
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
-    int inPipe = 0;
-    if (pipeline_steps>1){
-       inPipe = 1;
 
-    }
+    //int inPipe = 0;
+    //if (pipeline_steps>1){
+    //   inPipe = 1;
+    //}
 
     int infileFD = STDIN_FILENO;
-    int outfileFD = STDIN_FILENO;
+    int outfileFD = STDOUT_FILENO;
     int i=0;
-    char pipeline[4096*4];
     while(i<pipeline_steps){
         if(parsed_commands[i] == NULL || parsed_commands[i][0] == NULL){ // Handle empty commands and comments
             i++;
             ret = 0;
             continue;
         }
+        //DEBUG INFO
         char *currCmd = malloc(sizeof(parsed_commands[i][0]));
         strcpy(currCmd, parsed_commands[i][0]);
         if(debugMode){
             fprintf(stderr, "RUNNING: [%s]\n", currCmd);
         }
-        if(inPipe==0){
-            int infileFD = open(infile, O_RDWR);
-            if(infile == NULL || infileFD == -1){
- //               printf("infile null\n");
-                infileFD = STDIN_FILENO;
-            }
-            outfileFD = open(outfile, O_RDWR);
-            if(outfile == NULL || outfileFD == -1){
-    //            printf("oufile null\n");
-                outfileFD = STDOUT_FILENO;
-            }
-        }
 
-        if(inPipe==1){
-            if(i==pipeline_steps-1){outfileFD=STDOUT_FILENO;}
-            else{
-                int outfileFD = open(pipeline, O_RDWR);
-                if(outfile == NULL || outfileFD == -1){
-      //              printf("outfile null or Error\n");
-                    outfileFD = STDOUT_FILENO;
-                }
-            }
+        //INFILE
+        infileFD = open(infile, O_RDWR);
+        if(infile == NULL){
+            infileFD = STDIN_FILENO;
+        } else if (infileFD==-1){
+           infileFD = open(infile, O_RDWR | O_CREAT); 
+        }
+        
+        //OUTFILE 
+        outfileFD = open(outfile, O_RDWR);
+        if(outfile == NULL){
+            outfileFD = STDOUT_FILENO;
+        } else if (outfileFD==-1){
+            outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
         }
 
         ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
 
-        if(inPipe==1){    
-            infileFD = open(pipeline, O_RDWR);
-            if(infile == NULL || infileFD == -1){
-        //        printf("infile null or Error\n");
-                infileFD = STDIN_FILENO;
-            }
-        }
- 
+        //DEBUG INFO
         if(debugMode){
             fprintf(stderr, "ENDED: [%s] (ret=%d)\n", currCmd, ret);
         }
