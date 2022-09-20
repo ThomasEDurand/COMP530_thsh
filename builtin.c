@@ -56,7 +56,7 @@ int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
   }
 
   if(chdir(newCwd) != 0){
-    printf("chdir failed\n");
+    printf("Failed to run command - error -1\n");
   } else {
     strcpy(old_path, cur_path);
     getcwd(cur_path, MAX_INPUT);
