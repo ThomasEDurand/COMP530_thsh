@@ -121,7 +121,7 @@ int main(int argc, char **argv, char **envp) {
     int i=0;
     char pipeline[4096*4];
     while(i<pipeline_steps){
-        printf("pipeline stage %d\n", i);
+//        printf("pipeline stage %d\n", i);
         char *currCmd = parsed_commands[i][0];
         if(debugMode){
             fprintf(stderr, "RUNNING:[%s]\n", currCmd);
@@ -130,12 +130,12 @@ int main(int argc, char **argv, char **envp) {
         if(inPipe==0){
             int infileFD = open(infile, O_RDWR);
             if(infile == NULL || infileFD == -1){
-                printf("infile null\n");
+  //              printf("infile null\n");
                 infileFD = STDIN_FILENO;
             }
             outfileFD = open(outfile, O_RDWR);
             if(outfile == NULL || outfileFD == -1){
-                printf("oufile null\n");
+    //            printf("oufile null\n");
                 outfileFD = STDOUT_FILENO;
             }
         }
@@ -145,7 +145,7 @@ int main(int argc, char **argv, char **envp) {
             else{
                 int outfileFD = open(pipeline, O_RDWR);
                 if(outfile == NULL || outfileFD == -1){
-                    printf("outfile null or Error\n");
+      //              printf("outfile null or Error\n");
                     outfileFD = STDOUT_FILENO;
                 }
             }
@@ -156,7 +156,7 @@ int main(int argc, char **argv, char **envp) {
         if(inPipe==1){    
             infileFD = open(pipeline, O_RDWR);
             if(infile == NULL || infileFD == -1){
-                printf("infile null or Error\n");
+        //        printf("infile null or Error\n");
                 infileFD = STDIN_FILENO;
             }
         }
