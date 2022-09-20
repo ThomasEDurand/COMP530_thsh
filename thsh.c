@@ -122,7 +122,8 @@ int main(int argc, char **argv, char **envp) {
     char pipeline[4096*4];
     while(i<pipeline_steps){
 //        printf("pipeline stage %d\n", i);
-        char *currCmd = parsed_commands[i][0];
+        char *currCmd = malloc(sizeof(parsed_commands[i][0]));
+        strcpy(currCmd, parsed_commands[i][0]);
         if(debugMode){
             fprintf(stderr, "RUNNING: [%s]\n", currCmd);
         }
