@@ -111,25 +111,56 @@ int main(int argc, char **argv, char **envp) {
     //
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
-    
-    int i = 0;
+    int inPipe = 0;
+    if (pipeline_steps>1){
+       inPipe = 1;
+    }
+
+    int infileFD = STDIN_FILENO;
+    int outfileFD = STDIN_FILENO;
+    int i=0;
+    char pipeline[4096*4];
     while(i<pipeline_steps){
+        printf("pipeline stage %d\n", i);
         char *currCmd = parsed_commands[i][0];
         if(debugMode){
             fprintf(stderr, "RUNNING:[%s]\n", currCmd);
         }
-
-        int infileFD = open(infile, O_RDWR);
-        if(infile == NULL || infileFD == -1){
-            infileFD = STDIN_FILENO;
+        
+        if(inPipe==0){
+            int infileFD = open(infile, O_RDWR);
+            if(infile == NULL || infileFD == -1){
+                printf("infile null\n");
+                infileFD = STDIN_FILENO;
+            }
+            outfileFD = open(outfile, O_RDWR);
+            if(outfile == NULL || outfileFD == -1){
+                printf("oufile null\n");
+                outfileFD = STDOUT_FILENO;
+            }
         }
 
-        int outfileFD = open(outfile, O_RDWR);
-        if(outfile == NULL || outfileFD == -1){
-            outfileFD = STDOUT_FILENO;
+        if(inPipe==1){
+            if(i==pipeline_steps-1){outfileFD=STDOUT_FILENO;}
+            else{
+                int outfileFD = open(pipeline, O_RDWR);
+                if(outfile == NULL || outfileFD == -1){
+                    printf("outfile null or Error\n");
+                    outfileFD = STDOUT_FILENO;
+                }
+            }
         }
 
         ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
+
+        if(inPipe==1){    
+            infileFD = open(pipeline, O_RDWR);
+            if(infile == NULL || infileFD == -1){
+                printf("infile null or Error\n");
+                infileFD = STDIN_FILENO;
+            }
+        }
+ 
         if(debugMode){
             fprintf(stderr, "ENDED:[%s]\n(ret=%d)\n", currCmd, ret);
         }
