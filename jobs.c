@@ -244,7 +244,7 @@ int run_command(char *args[MAX_ARGS], int stdinFD, int stdoutFD, int job_id) {
   }
   // Suppress the compiler warning that find_job is not used in the starer code.
   // You may remove this line if/when you use find_job in your code.
-  printf("Could not find command %s\n", args[0]);
+  printf("Failed to run command - error -2\n");
   (void)&find_job;
   return rv;
 }
