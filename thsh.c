@@ -27,7 +27,7 @@ int main(int argc, char **argv, char **envp) {
   FILE * stream;
   int nonInteractive = 0;
   if(debugMode != 1 && argv != NULL && argv[1] != NULL){
-//      printf("interactive mode\n");
+      printf("interactive mode\n");
       nonInteractive = 1;
       stream = fopen(argv[1], "r");
   }
@@ -43,8 +43,8 @@ int main(int argc, char **argv, char **envp) {
     printf("Error initializing the path table: %d\n", ret);
     return ret;
   } 
-  
-   while (!finished) {
+  int execScript = 0;
+  while (!finished) {
     int length;
     // Buffer to hold input
     char cmd[MAX_INPUT];
@@ -72,14 +72,20 @@ int main(int argc, char **argv, char **envp) {
       }
     }
     
-    if(nonInteractive==1){
+    if(execScript == 1){ // SCRIPT ON COMMAND LINE
         char line[MAX_PIPELINE];
+        if (fgets(line, MAX_PIPELINE, stream)==NULL){
+            execScript = 0;
+            continue;
+        } else {
+            pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
+        }
+    } else if(nonInteractive==1){ // SCRIPT PASSED IN AS ARG
+        char line[1024];
         if(fgets(line, MAX_PIPELINE, stream)==NULL){
             return 0;
-        };
-        char * newLine = malloc(sizeof(line));
-        strcpy(newLine, line);
-        pipeline_steps = parse_line(newLine, 0, parsed_commands, &infile, &outfile);
+        }
+        pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
     }
     else {
         // Read a line of input
@@ -113,11 +119,16 @@ int main(int argc, char **argv, char **envp) {
     //
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
+    
 
-    //int inPipe = 0;
-    //if (pipeline_steps>1){
-    //   inPipe = 1;
-    //}
+    int inPipe = 0;
+    int pipe0[2];
+    pipe(pipe0);
+    int pipe1[2];
+    pipe(pipe1);
+    if (pipeline_steps>1){
+       inPipe = 1;
+    }
 
     int infileFD = STDIN_FILENO;
     int outfileFD = STDOUT_FILENO;
@@ -149,6 +160,36 @@ int main(int argc, char **argv, char **envp) {
             outfileFD = STDOUT_FILENO;
         } else if (outfileFD==-1){
             outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
+        }
+
+        //SCRIPT AS INPUT
+        if(execScript == 0 && nonInteractive == 0){
+            stream = fopen(parsed_commands[i][0], "r");
+            if (stream != NULL){
+                execScript = 1;
+                ret = 0;
+                break;
+            }
+        }
+
+        // PIPELINE CURRENTLY BROKEN
+        if(inPipe == 1){
+            printf("pipeline stage: %d\n", i);
+            if(i%2==0){
+                if(i!=0 && infileFD==STDIN_FILENO){
+                    infileFD = pipe1[0];
+                }
+                if(i!=pipeline_steps-1 && outfileFD!=STDOUT_FILENO){
+                    outfileFD = pipe0[1];
+                }
+            } else {
+                if(i!=0){
+                    infileFD = pipe0[0];
+                }
+                if(i!=pipeline_steps-1){
+                    outfileFD = pipe1[1];
+                }
+            }
         }
 
         ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
