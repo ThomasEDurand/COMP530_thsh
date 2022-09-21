@@ -151,6 +151,15 @@ int main(int argc, char **argv, char **envp) {
             continue;
         }
 
+        // If infile and complex pipeline
+        if(inPipe == 1 && i==0 && infile != NULL){
+            infileFD = open(infile, O_RDWR);
+            if (infileFD==-1){
+                infileFD = open(infile, O_RDWR | O_CREAT, 0666);
+            }
+
+        }
+
         char currCmd[sizeof(parsed_commands[i][0])];
         strcpy(currCmd, parsed_commands[i][0]);
         //DEBUG INFO
@@ -208,7 +217,7 @@ int main(int argc, char **argv, char **envp) {
 
         ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
 
-        if(inPipe && infile == NULL){
+        if(inPipe){
             close(pipeLine[1]);
             infileFD = pipeLine[0];
         }
