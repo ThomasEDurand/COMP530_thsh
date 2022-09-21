@@ -144,7 +144,6 @@ int main(int argc, char **argv, char **envp) {
        inPipe = 1;
     }
 */
-    char currCmd[1024];
     int infileFD = STDIN_FILENO;
     int outfileFD = STDOUT_FILENO;
     int i=0;
@@ -156,10 +155,9 @@ int main(int argc, char **argv, char **envp) {
         }
         //DEBUG INFO
 
+        char *currCmd = malloc(sizeof(parsed_commands[i][0]));
+        strcpy(currCmd, parsed_commands[i][0]);
         if(debugMode){
-            for(int j=0;j<1024;j++){
-                currCmd[j] = '\0';
-            }
             strcpy(currCmd, parsed_commands[i][0]);
             fprintf(stderr, "RUNNING: [%s]\n", currCmd);
         }
