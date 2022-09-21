@@ -134,16 +134,13 @@ int main(int argc, char **argv, char **envp) {
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
 
-/*
+
+    int pipeLine[2];
     int inPipe = 0;
-    int pipe0[2];
-    pipe(pipe0);
-    int pipe1[2];
-    pipe(pipe1);
     if (pipeline_steps>1){
        inPipe = 1;
     }
-*/
+
     int infileFD = STDIN_FILENO;
     int outfileFD = STDOUT_FILENO;
     int i=0;
@@ -153,34 +150,36 @@ int main(int argc, char **argv, char **envp) {
             ret = 0;
             continue;
         }
-        //DEBUG INFO
 
         char currCmd[sizeof(parsed_commands[i][0])];
         strcpy(currCmd, parsed_commands[i][0]);
+        //DEBUG INFO
         if(debugMode){
-            strcpy(currCmd, parsed_commands[i][0]);
             fprintf(stderr, "RUNNING: [%s]\n", currCmd);
         }
 
         //INFILE
-        infileFD = open(infile, O_RDWR);
-        if(infile == NULL){
+        if(infile == NULL && inPipe==0){
             infileFD = STDIN_FILENO;
-        } else if (infileFD==-1){
-           infileFD = open(infile, O_RDWR | O_CREAT, 0666); 
+        } else if (inPipe==0){
+            infileFD = open(infile, O_RDWR);
+            if (infileFD==-1){
+                infileFD = open(infile, O_RDWR | O_CREAT, 0666);
+            }
+        }
+ 
+        //OUTFILE 
+        if(outfile == NULL && inPipe == 0){
+            outfileFD = STDOUT_FILENO;
+        } else if (inPipe==0){
+            outfileFD = open(outfile, O_RDWR);
+            if (outfileFD==-1){
+                outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
+            }
         }
         
-        //OUTFILE 
-        outfileFD = open(outfile, O_RDWR);
-        if(outfile == NULL){
-            outfileFD = STDOUT_FILENO;
-        } else if (outfileFD==-1){
-            outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
-        }
-
         //SCRIPT AS INPUT
         struct stat buf;
-
         if(stat(currCmd, &buf)!=0 && execScript == 0 && nonInteractive == 0){
             stream = fopen(parsed_commands[i][0], "r");
             if (stream != NULL){
@@ -190,29 +189,24 @@ int main(int argc, char **argv, char **envp) {
             }
         }
 
-        /*
+
         // PIPELINE CURRENTLY BROKEN
-        if(inPipe == 1){
-            printf("pipeline stage: %d\n", i);
-            if(i%2==0){
-                if(i!=0 && infileFD==STDIN_FILENO){
-                    infileFD = pipe1[0];
-                }
-                if(i!=pipeline_steps-1 && outfileFD!=STDOUT_FILENO){
-                    outfileFD = pipe0[1];
-                }
+        if(inPipe && outfile == NULL){
+            pipe(pipeLine);
+            if(i != pipeline_steps-1){
+                outfileFD = pipeLine[1];
             } else {
-                if(i!=0){
-                    infileFD = pipe0[0];
-                }
-                if(i!=pipeline_steps-1){
-                    outfileFD = pipe1[1];
-                }
+                outfileFD = STDOUT_FILENO;
             }
         }
-        */
+        
 
         ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
+
+        if(inPipe && infile == NULL){
+            close(pipeLine[1]);
+            infileFD = pipeLine[0];
+        }
 
         //DEBUG INFO
         if(debugMode){

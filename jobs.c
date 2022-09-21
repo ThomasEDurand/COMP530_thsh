@@ -190,18 +190,18 @@ static struct job *find_job(int job_id, bool remove) {
  *
  * Returns 0 on success, -errno on failure
  */
-int attemptExec(char *args[MAX_ARGS], char* prgmPath, int stdinFD, int stdoutFD){
+int attemptExec(char *args[MAX_ARGS], char* prgmPath, int infileFD, int outfileFD){
     struct stat buf;
     if(stat(prgmPath, &buf) == 0){
         int childPID = fork();
         if(childPID == 0){
-            if(stdinFD!=STDIN_FILENO){
-                dup2(stdinFD,STDIN_FILENO);
-                close(stdinFD);
+            if(infileFD!=STDIN_FILENO){
+                dup2(infileFD,STDIN_FILENO);
+                close(infileFD);
             }
-            if(stdoutFD != STDOUT_FILENO){
-                dup2(stdoutFD,STDOUT_FILENO);
-                close(stdoutFD);
+            if(outfileFD != STDOUT_FILENO){
+                dup2(outfileFD,STDOUT_FILENO);
+                close(outfileFD);
             }
             execv(prgmPath, args);
             exit(1);
@@ -214,7 +214,7 @@ int attemptExec(char *args[MAX_ARGS], char* prgmPath, int stdinFD, int stdoutFD)
     return 0;
 }
 
-int run_command(char *args[MAX_ARGS], int stdinFD, int stdoutFD, int job_id) {
+int run_command(char *args[MAX_ARGS], int infileFD, int outfileFD, int job_id) {
   /* Lab 1: Your code here */
   int rv = 0;
   int l = sizeof(path_table)-1; //last entry in terminating char
@@ -222,13 +222,13 @@ int run_command(char *args[MAX_ARGS], int stdinFD, int stdoutFD, int job_id) {
 
   
   // Absolute path
-  int r = attemptExec(args, prgm, stdinFD, stdoutFD);
+  int r = attemptExec(args, prgm, infileFD, outfileFD);
   if(r!=0){return 0;}
  
   // Check if built in
   r = 0;
   int *retval = &r;
-  int builtIn = handle_builtin(args, stdinFD, stdoutFD, retval);
+  int builtIn = handle_builtin(args, infileFD, outfileFD, retval);
   if(builtIn != 0) {
     return 0;
   }
@@ -239,7 +239,7 @@ int run_command(char *args[MAX_ARGS], int stdinFD, int stdoutFD, int job_id) {
       strcat(prgmPath, "/");
       strcat(prgmPath, prgm);
     
-      int rv = attemptExec(args, prgmPath, stdinFD, stdoutFD);
+      int rv = attemptExec(args, prgmPath, infileFD, outfileFD);
       if(rv != 0){ return 0;}  
   }
   // Suppress the compiler warning that find_job is not used in the starer code.
