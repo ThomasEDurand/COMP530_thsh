@@ -27,7 +27,6 @@ int main(int argc, char **argv, char **envp) {
   FILE * stream;
   int nonInteractive = 0;
   if(debugMode != 1 && argv != NULL && argv[1] != NULL){
-      printf("interactive mode\n");
       nonInteractive = 1;
       stream = fopen(argv[1], "r");
   }
@@ -119,8 +118,8 @@ int main(int argc, char **argv, char **envp) {
     //
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
-    
 
+/*
     int inPipe = 0;
     int pipe0[2];
     pipe(pipe0);
@@ -129,7 +128,7 @@ int main(int argc, char **argv, char **envp) {
     if (pipeline_steps>1){
        inPipe = 1;
     }
-
+*/
     int infileFD = STDIN_FILENO;
     int outfileFD = STDOUT_FILENO;
     int i=0;
@@ -172,6 +171,7 @@ int main(int argc, char **argv, char **envp) {
             }
         }
 
+        /*
         // PIPELINE CURRENTLY BROKEN
         if(inPipe == 1){
             printf("pipeline stage: %d\n", i);
@@ -191,6 +191,7 @@ int main(int argc, char **argv, char **envp) {
                 }
             }
         }
+        */
 
         ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
 
