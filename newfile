@@ -1,1 +1,21 @@
-"asd"
+total 204
+-rw-r--r-- 1 root root  3793 Sep 20 19:39 builtin.c
+-rw-r--r-- 1 root root  9912 Sep 20 19:39 builtin.o
+-rw-r--r-- 1 root root    68 Aug 31 17:43 challenge.txt
+-rw-r--r-- 1 root root    77 Sep 16 02:46 EXECTEST.c
+-rwxr-xr-x 1 root root 15952 Sep 16 02:46 EXECTEST.o
+-rw-r--r-- 1 root root  6835 Sep 21 13:21 jobs.c
+-rw-r--r-- 1 root root 16448 Sep 21 13:40 jobs.o
+-rw-r--r-- 1 root root   614 Sep 13 12:50 Makefile
+-rw-r--r-- 1 root root     3 Sep 21 16:14 newfile
+-rw-r--r-- 1 root root  7543 Sep 19 20:33 parse.c
+-rw-r--r-- 1 root root  8488 Sep 19 20:33 parse.o
+-rwxr-xr-x 1 root root 33344 Sep 21 13:50 parser_tester
+-rw-r--r-- 1 root root  2172 Sep 13 13:05 parser_tester.c
+-rw-r--r-- 1 root root    95 Aug 31 17:43 slack.txt
+-rwxr-xr-x 1 root root 32384 Sep 21 13:50 test_env
+-rw-r--r-- 1 root root   397 Aug 31 17:43 test_env.c
+-rwxr--r-- 1 root root    28 Sep 19 13:58 testscript
+-rwxr-xr-x 1 root root 35936 Sep 21 16:14 thsh
+-rw-r--r-- 1 root root  6583 Sep 21 16:17 thsh.c
+-rw-r--r-- 1 root root  1140 Sep 13 13:05 thsh.h

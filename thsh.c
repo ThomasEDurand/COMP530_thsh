@@ -191,12 +191,17 @@ int main(int argc, char **argv, char **envp) {
 
 
         // PIPELINE CURRENTLY BROKEN
-        if(inPipe && outfile == NULL){
+        if(inPipe){
             pipe(pipeLine);
             if(i != pipeline_steps-1){
                 outfileFD = pipeLine[1];
-            } else {
+            } else if(outfile==NULL){
                 outfileFD = STDOUT_FILENO;
+            } else {
+                outfileFD = open(outfile, O_RDWR);
+                if (outfileFD==-1){
+                    outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
+                }
             }
         }
         
