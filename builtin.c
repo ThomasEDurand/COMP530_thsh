@@ -42,9 +42,9 @@ int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
   if(cdArg == NULL || cdArg[0] == '\0'){ 
     newCwd = getenv("HOME");  
     getcwd(cur_path, MAX_INPUT);
-  } else if (cdArg[0] == '.' && cdArg[1] == '.'){
+  } else if (cdArg[0] == '.' && cdArg[1] == '.' && (cdArg[2] == '\0' || cdArg[2] == ' ')) {
     newCwd = "..";
-  } else if (cdArg[0] == '.') {
+  } else if (cdArg[0] == '.' && (cdArg[1] == ' ' || cdArg[1] == '\0')) {
     newCwd = ".";
   } else if (cdArg[0] == '.' && cdArg[1] == '/'){
     newCwd = cdArg;
