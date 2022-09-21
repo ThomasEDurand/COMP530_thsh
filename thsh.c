@@ -155,7 +155,7 @@ int main(int argc, char **argv, char **envp) {
         }
         //DEBUG INFO
 
-        char *currCmd = malloc(sizeof(parsed_commands[i][0]));
+        char currCmd[sizeof(parsed_commands[i][0])];
         strcpy(currCmd, parsed_commands[i][0]);
         if(debugMode){
             strcpy(currCmd, parsed_commands[i][0]);
