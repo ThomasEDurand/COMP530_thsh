@@ -20,9 +20,6 @@ static char cur_path[MAX_INPUT];
  * Returns zero on success, -errno on failure.
  */
 int init_cwd(void) {
-
-  // Lab 1: Your code here
-
   return 0;
 }
 
@@ -47,6 +44,8 @@ int handle_cd(char *args[MAX_INPUT], int stdin, int stdout) {
     getcwd(cur_path, MAX_INPUT);
   } else if (cdArg[0] == '.' && cdArg[1] == '.'){
     newCwd = "..";
+  } else if (cdArg[0] == '.') {
+    newCwd = ".";
   } else if (cdArg[0] == '.' && cdArg[1] == '/'){
     newCwd = cdArg;
   } else if (cdArg[0] == '-'){

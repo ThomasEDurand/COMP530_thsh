@@ -6,6 +6,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+int openFile(char * file){ // open file weather it exsits
+    int fd = open(file, O_RDWR);
+    if (fd==-1){
+        fd = open(file, O_RDWR | O_CREAT, 0666);
+    }
+    return fd;
+}
 
 int main(int argc, char **argv, char **envp) {
   // flag that the program should end
@@ -17,13 +24,13 @@ int main(int argc, char **argv, char **envp) {
   // Add support for parsing the -d option from the command line
   // and handling the case where a script is passed as input to your shell
   // Lab 1: Your code here
-  int debugMode = 0;
+  
+  int debugMode = 0, inPipe = 0, execScript = 0, nonInteractive = 0; // FLAGS
   if(argc>1 && argv!=NULL && argv[1]!=NULL && argv[1][0]=='-' && argv[1][1]=='d' && (argv[1][2]=='\0' || argv[1][2]==' ')){
     debugMode = 1;
   }
 
   FILE * stream;
-  int nonInteractive = 0;
   if(debugMode != 1 && argv != NULL && argv[1] != NULL){
       nonInteractive = 1;
       stream = fopen(argv[1], "r");
@@ -40,7 +47,6 @@ int main(int argc, char **argv, char **envp) {
     printf("Error initializing the path table: %d\n", ret);
     return ret;
   } 
-  int execScript = 0;
   while (!finished) {
     int length;
     // Buffer to hold input
@@ -60,15 +66,13 @@ int main(int argc, char **argv, char **envp) {
 
     //PRINT PROMPT IF EXECUTING NORMALLY
     if(execScript == 0 && nonInteractive == 0){
-    if (!input_fd) {
-      ret = print_prompt();
-      if (ret <= 0) {
-	    // if we printed 0 bytes, this call failed and the program
-	    // should end -- this will likely never occur.
-	    finished = true;
-	    break;
-      }
-    }
+        if (!input_fd) {
+            ret = print_prompt();
+             if (ret <= 0) { 
+	            finished = true;
+	            break;
+              }
+        }
     }
 
     // MUTUALTY EXCLUSIVE WITH NONINTERACTIVE 
@@ -101,20 +105,16 @@ int main(int argc, char **argv, char **envp) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
         }
-    // PRINT PROMPT IF EXECUTING SCRIPT
-    if(execScript == 1 || nonInteractive == 1){
-    if (!input_fd) {
-      ret = print_prompt();
-      if (ret <= 0) {
-	    // if we printed 0 bytes, this call failed and the program
-	    // should end -- this will likely never occur.
-	    finished = true;
-	    break;
-      }
-    }
-    }
-
-
+        // PRINT PROMPT IF EXECUTING SCRIPT
+        if(execScript == 1 || nonInteractive == 1){
+            if (!input_fd) {
+                ret = print_prompt();
+                if (ret <= 0) {
+	                finished = true;
+	                break;
+                }
+            }
+        }
     }
 
     // Just echo the command line for now
@@ -134,15 +134,12 @@ int main(int argc, char **argv, char **envp) {
     // For now, ret will be set to zero; once you implement command handling,
     // ret should be set to the return from the command.
 
-
     int pipeLine[2];
-    int inPipe = 0;
     if (pipeline_steps>1){
        inPipe = 1;
     }
 
-    int infileFD = STDIN_FILENO;
-    int outfileFD = STDOUT_FILENO;
+    int infileFD = STDIN_FILENO, outfileFD = STDOUT_FILENO;
     int i=0;
     while(i<pipeline_steps){
         if(parsed_commands[i] == NULL || parsed_commands[i][0] == NULL){ // Handle empty commands and comments
@@ -171,20 +168,15 @@ int main(int argc, char **argv, char **envp) {
         if(infile == NULL && inPipe==0){
             infileFD = STDIN_FILENO;
         } else if (inPipe==0){
-            infileFD = open(infile, O_RDWR);
-            if (infileFD==-1){
-                infileFD = open(infile, O_RDWR | O_CREAT, 0666);
-            }
+            infileFD = openFile(infile);
         }
+ 
  
         //OUTFILE 
         if(outfile == NULL && inPipe == 0){
             outfileFD = STDOUT_FILENO;
         } else if (inPipe==0){
-            outfileFD = open(outfile, O_RDWR);
-            if (outfileFD==-1){
-                outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
-            }
+            outfileFD = openFile(outfile);
         }
         
         //SCRIPT AS INPUT
@@ -198,8 +190,7 @@ int main(int argc, char **argv, char **envp) {
             }
         }
 
-
-        // PIPELINE CURRENTLY BROKEN
+        // PIPELINE 
         if(inPipe){
             pipe(pipeLine);
             if(i != pipeline_steps-1){
@@ -207,30 +198,23 @@ int main(int argc, char **argv, char **envp) {
             } else if(outfile==NULL){
                 outfileFD = STDOUT_FILENO;
             } else {
-                outfileFD = open(outfile, O_RDWR);
-                if (outfileFD==-1){
-                    outfileFD = open(outfile, O_RDWR | O_CREAT, 0666);
-                }
+                outfileFD = openFile(outfile);
             }
         }
         
+        ret = run_command(parsed_commands[i++], infileFD, outfileFD, 0); 
 
-        ret = run_command(parsed_commands[i], infileFD, outfileFD, 0); 
-
-        if(inPipe){
+        if(inPipe){ // SET INFILE FOR NEXT PIPELINE
             close(pipeLine[1]);
             infileFD = pipeLine[0];
         }
 
-        //DEBUG INFO
-        if(debugMode){
+        if(debugMode){ //DEBUG INFO
             fprintf(stderr, "ENDED: [%s] (ret=%d)\n", currCmd, ret);
         }
-        i++;
     }
-
-    // Do NOT change this if/printf - it is used by the autograder.
-    if (ret) {
+ 
+    if (ret) { // Do NOT change this if/printf - it is used by the autograder.
       printf("Failed to run command - error %d\n", ret);
     }
   }
