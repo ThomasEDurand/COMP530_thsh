@@ -13,7 +13,6 @@ int main(int argc, char **argv, char **envp) {
   int input_fd = 0; // Default to stdin
   int ret = 0;
 
-
   // Lab 1:
   // Add support for parsing the -d option from the command line
   // and handling the case where a script is passed as input to your shell
@@ -21,7 +20,6 @@ int main(int argc, char **argv, char **envp) {
   int debugMode = 0;
   if(argc>1 && argv!=NULL && argv[1]!=NULL && argv[1][0]=='-' && argv[1][1]=='d' && (argv[1][2]=='\0' || argv[1][2]==' ')){
     debugMode = 1;
-    //printf("Running thsh in debug mode\n");
   }
 
   FILE * stream;
@@ -53,7 +51,16 @@ int main(int argc, char **argv, char **envp) {
     char *infile = NULL;
     char *outfile = NULL;
     int pipeline_steps = 0;
+    // Reset memory from the last iteration
+    for(int i = 0; i < MAX_PIPELINE; i++) {
+      for(int j = 0; j < MAX_ARGS; j++) {
+          parsed_commands[i][j] = NULL;
+      }
+    }
 
+    //PRINT PROMPT
+
+    if(execScript == 0 && nonInteractive == 0){
     if (!input_fd) {
       ret = print_prompt();
       if (ret <= 0) {
@@ -63,16 +70,11 @@ int main(int argc, char **argv, char **envp) {
 	    break;
       }
     }
-
-    // Reset memory from the last iteration
-    for(int i = 0; i < MAX_PIPELINE; i++) {
-      for(int j = 0; j < MAX_ARGS; j++) {
-          parsed_commands[i][j] = NULL;
-      }
     }
-    
-    if(execScript == 1){ // SCRIPT ON COMMAND LINE
-        char line[MAX_PIPELINE];
+
+    // MUTUALTY EXCLUSIVE WITH NONINTERACTIVE 
+    if(execScript == 1){ // SCRIPT GIVEN ON COMMAND LINE
+        char line[1024];
         if (fgets(line, MAX_PIPELINE, stream)==NULL){
             execScript = 0;
             continue;
@@ -85,8 +87,7 @@ int main(int argc, char **argv, char **envp) {
             return 0;
         }
         pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
-    }
-    else {
+    } else {
         // Read a line of input
         length = read_one_line(input_fd, buf, MAX_INPUT);
         if (length <= 0) {
@@ -101,7 +102,22 @@ int main(int argc, char **argv, char **envp) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
         }
+
+    if(execScript == 1 || nonInteractive == 1){
+    if (!input_fd) {
+      ret = print_prompt();
+      if (ret <= 0) {
+	    // if we printed 0 bytes, this call failed and the program
+	    // should end -- this will likely never occur.
+	    finished = true;
+	    break;
+      }
     }
+    }
+
+
+    }
+
     // Just echo the command line for now
     // file descriptor 1 -> writing to stdout
     // print the whole cmd string (write number of
