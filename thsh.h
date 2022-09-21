@@ -10,13 +10,13 @@
 #include <errno.h>
 #include <assert.h>
 
-// Assume no input line will be longer than 1024 bytes
+// Assume no input line will be longer than 1023 bytes (+NULL)
 #define MAX_INPUT    1024
 
-// Assume a pipeline will never be longer than 32 stages
+// Assume a pipeline will never be longer than 31 stages (+NULL)
 #define MAX_PIPELINE   32
 
-// Assume any individual command will not have more than 16 arguments
+// Assume any individual command will not have more than 15 arguments (+NULL)
 #define MAX_ARGS       16
 
 // Disallow exec*p* variants, lest we spoil the fun
