@@ -37,8 +37,7 @@ static char ** path_table;
 int includeNull(void){
   char *strEnv = getenv("PATH");
 
-  int nullIdx = 0;
- 
+  int nullIdx = 0; 
   for(int i = 0; i < (int) strlen(strEnv)-1; i++){
     if(strEnv[i] == ':' && strEnv[i+1] == ':'){
       return ++nullIdx;
