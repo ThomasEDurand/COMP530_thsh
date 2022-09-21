@@ -140,7 +140,7 @@ int main(int argc, char **argv, char **envp) {
         if(infile == NULL){
             infileFD = STDIN_FILENO;
         } else if (infileFD==-1){
-           infileFD = open(infile, O_RDWR | O_CREAT); 
+           infileFD = open(infile, O_RDWR | O_CREAT, 0666); 
         }
         
         //OUTFILE 

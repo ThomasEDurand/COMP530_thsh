@@ -196,7 +196,7 @@ int attemptExec(char *args[MAX_ARGS], char* prgmPath, int stdinFD, int stdoutFD)
         int childPID = fork();
         if(childPID == 0){
             if(stdinFD!=STDIN_FILENO){
-                dup2(stdinFD,stdinFD);
+                dup2(stdinFD,STDIN_FILENO);
                 close(stdinFD);
             }
             if(stdoutFD != STDOUT_FILENO){
