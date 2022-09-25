@@ -58,8 +58,9 @@ int main(int argc, char **argv, char **envp) {
       }
     }
 
+/*
 // NEW LOGIC BEGIN
-/*    if(execScript == 1 || nonInteractive==1) {
+    if(execScript == 1 || nonInteractive==1) {
         char line[1024];
         if (fgets(line, MAX_PIPELINE, stream)==NULL){
             if(execScript == 1){
@@ -96,8 +97,12 @@ int main(int argc, char **argv, char **envp) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
         }
-*/    }
- // NEW LOGIC END
+   }
+
+*/
+// NEW LOGIC END
+// OLD LOGIC BEGIN
+ 
 //PRINT PROMPT IF EXECUTING NORMALLY
     if(execScript == 0 && nonInteractive == 0){
         if (!input_fd) {
