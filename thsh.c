@@ -64,16 +64,7 @@ int main(int argc, char **argv, char **envp) {
       }
     }
 
-    //PRINT PROMPT IF EXECUTING NORMALLY
-    if(execScript == 0 && nonInteractive == 0){
-        if (!input_fd) {
-            ret = print_prompt();
-             if (ret <= 0) { 
-	            finished = true;
-	            break;
-              }
-        }
-    }
+    
 
     // MUTUALTY EXCLUSIVE WITH NONINTERACTIVE 
     if(execScript == 1){ // SCRIPT GIVEN ON COMMAND LINE
@@ -90,7 +81,20 @@ int main(int argc, char **argv, char **envp) {
             return 0;
         }
         pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
-    } else {
+    }
+
+
+    //PRINT PROMPT IF EXECUTING NORMALLY
+    if (!input_fd) {
+        ret = print_prompt();
+        if (ret <= 0) { 
+	        finished = true;
+	        break;
+            }
+    }
+    
+    
+    if(execScript == 0 && nonInteractive == 0) {
         // Read a line of input
         length = read_one_line(input_fd, buf, MAX_INPUT);
         if (length <= 0) {
@@ -105,34 +109,7 @@ int main(int argc, char **argv, char **envp) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
         }
-        // PRINT PROMPT IF EXECUTING SCRIPT
-        if(execScript == 1 || nonInteractive == 1){
-            if (!input_fd) {
-                ret = print_prompt();
-                if (ret <= 0) {
-	                finished = true;
-	                break;
-                }
-            }
-        }
     }
-
-    // Just echo the command line for now
-    // file descriptor 1 -> writing to stdout
-    // print the whole cmd string (write number of
-    // chars/bytes equal to the length of cmd, or MAX_INPUT,
-    // whichever is less)
-    //
-    // Comment this line once you implement
-    // command handling
-    // dprintf(1, "%s\n", cmd);
-
-    // In Lab 1, you will need to add code to actually run the commands,
-    // add debug printing, and handle redirection and pipelines, as
-    // explained in the handout.
-    //
-    // For now, ret will be set to zero; once you implement command handling,
-    // ret should be set to the return from the command.
 
     int pipeLine[2];
     if (pipeline_steps>1){
@@ -142,7 +119,7 @@ int main(int argc, char **argv, char **envp) {
     int infileFD = STDIN_FILENO, outfileFD = STDOUT_FILENO;
     int i=0;
     while(i<pipeline_steps){
-        if(parsed_commands[i] == NULL || parsed_commands[i][0] == NULL){ // Handle empty commands and comments
+        if(parsed_commands[i][0] == NULL){ // Handle empty commands and comments
             i++;
             ret = 0;
             continue;
