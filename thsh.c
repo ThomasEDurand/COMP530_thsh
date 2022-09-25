@@ -64,25 +64,18 @@ int main(int argc, char **argv, char **envp) {
       }
     }
 
-    
-
-    // MUTUALTY EXCLUSIVE WITH NONINTERACTIVE 
-    if(execScript == 1){ // SCRIPT GIVEN ON COMMAND LINE
+    if(execScript == 1 || nonInteractive==1) {
         char line[1024];
         if (fgets(line, MAX_PIPELINE, stream)==NULL){
-            execScript = 0;
-            continue;
-        } else {
-            pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
-        }
-    } else if(nonInteractive==1){ // SCRIPT PASSED IN AS ARG
-        char line[1024];
-        if(fgets(line, MAX_PIPELINE, stream)==NULL){
-            return 0;
+            if(execScript == 1){
+                execScript = 0;
+                continue;
+            } else {
+                return 0;
+            }
         }
         pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
     }
-
 
     //PRINT PROMPT IF EXECUTING NORMALLY
     if (!input_fd) {
@@ -92,7 +85,6 @@ int main(int argc, char **argv, char **envp) {
 	        break;
             }
     }
-    
     
     if(execScript == 0 && nonInteractive == 0) {
         // Read a line of input
@@ -158,7 +150,7 @@ int main(int argc, char **argv, char **envp) {
         
         //SCRIPT AS INPUT
         struct stat buf;
-        if(stat(currCmd, &buf)!=0 && execScript == 0 && nonInteractive == 0){
+        if(execScript == 0 && nonInteractive == 0 && stat(currCmd, &buf)==0){
             stream = fopen(parsed_commands[i][0], "r");
             if (stream != NULL){
                 execScript = 1;
