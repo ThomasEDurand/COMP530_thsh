@@ -15,15 +15,11 @@ int openFile(char * file){ // open file weather it exsits
 }
 
 int main(int argc, char **argv, char **envp) {
-  // flag that the program should end
-  bool finished = 0;
+  bool finished = 0;  // flag that the program should end
   int input_fd = 0; // Default to stdin
   int ret = 0;
 
   // Lab 1:
-  // Add support for parsing the -d option from the command line
-  // and handling the case where a script is passed as input to your shell
-  // Lab 1: Your code here
   
   int debugMode = 0, inPipe = 0, execScript = 0, nonInteractive = 0; // FLAGS
   if(argc>1 && argv!=NULL && argv[1]!=NULL && argv[1][0]=='-' && argv[1][1]=='d' && (argv[1][2]=='\0' || argv[1][2]==' ')){
@@ -49,10 +45,8 @@ int main(int argc, char **argv, char **envp) {
   } 
   while (!finished) {
     int length;
-    // Buffer to hold input
-    char cmd[MAX_INPUT];
-    // Get a pointer to cmd that type-checks with char *
-    char *buf = &cmd[0];
+    char cmd[MAX_INPUT]; // Buffer to hold input
+    char *buf = &cmd[0];     // Get a pointer to cmd that type-checks with char *
     char *parsed_commands[MAX_PIPELINE][MAX_ARGS];
     char *infile = NULL;
     char *outfile = NULL;
@@ -64,7 +58,8 @@ int main(int argc, char **argv, char **envp) {
       }
     }
 
-    if(execScript == 1 || nonInteractive==1) {
+// NEW LOGIC BEGIN
+/*    if(execScript == 1 || nonInteractive==1) {
         char line[1024];
         if (fgets(line, MAX_PIPELINE, stream)==NULL){
             if(execScript == 1){
@@ -101,8 +96,64 @@ int main(int argc, char **argv, char **envp) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
         }
+*/    }
+ // NEW LOGIC END
+//PRINT PROMPT IF EXECUTING NORMALLY
+    if(execScript == 0 && nonInteractive == 0){
+        if (!input_fd) {
+            ret = print_prompt();
+             if (ret <= 0) { 
+	            finished = true;
+	            break;
+              }
+        }
     }
 
+    // MUTUALTY EXCLUSIVE WITH NONINTERACTIVE 
+    if(execScript == 1){ // SCRIPT GIVEN ON COMMAND LINE
+        char line[1024];
+        if (fgets(line, MAX_PIPELINE, stream)==NULL){
+            execScript = 0;
+            continue;
+        } else {
+            pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
+        }
+    } else if(nonInteractive==1){ // SCRIPT PASSED IN AS ARG
+        char line[1024];
+        if(fgets(line, MAX_PIPELINE, stream)==NULL){
+            return 0;
+        }
+        pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
+    } else {
+        // Read a line of input
+        length = read_one_line(input_fd, buf, MAX_INPUT);
+        if (length <= 0) {
+            ret = length;
+            break;
+        }
+        // Pass it to the parser
+        pipeline_steps = parse_line(buf, length, parsed_commands, &infile, &outfile);
+
+        
+        if (pipeline_steps < 0) {
+            printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
+            continue;
+        }
+        // PRINT PROMPT IF EXECUTING SCRIPT
+        if(execScript == 1 || nonInteractive == 1){
+            if (!input_fd) {
+                ret = print_prompt();
+                if (ret <= 0) {
+	                finished = true;
+	                break;
+                }
+            }
+        }
+    }
+ // OLD LOGIC BEGIN
+
+
+ // OLD LOGIC END 
     int pipeLine[2];
     if (pipeline_steps>1){
        inPipe = 1;
