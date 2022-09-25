@@ -150,7 +150,7 @@ int main(int argc, char **argv, char **envp) {
         
         //SCRIPT AS INPUT
         struct stat buf;
-        if(execScript == 0 && nonInteractive == 0 && stat(currCmd, &buf)==0){
+        if(execScript == 0 && nonInteractive == 0 && stat(currCmd, &buf)!=0){
             stream = fopen(parsed_commands[i][0], "r");
             if (stream != NULL){
                 execScript = 1;
