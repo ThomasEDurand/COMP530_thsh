@@ -206,7 +206,7 @@ int main(int argc, char **argv, char **envp) {
         
         //SCRIPT AS INPUT
         struct stat buf;
-        printf("%s\n", currCmd);
+        //printf("%s\n", currCmd);
         if(execScript == 0 && nonInteractive == 0 && stat(currCmd, &buf)!=0){
             stream = fopen(parsed_commands[i][0], "r");
             if (stream != NULL){
