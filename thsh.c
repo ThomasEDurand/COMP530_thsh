@@ -58,7 +58,7 @@ int main(int argc, char **argv, char **envp) {
       }
     }
 
-/*
+
 // NEW LOGIC BEGIN
     if(execScript == 1 || nonInteractive==1) {
         char line[1024];
@@ -99,10 +99,10 @@ int main(int argc, char **argv, char **envp) {
         }
    }
 
-*/
+
 // NEW LOGIC END
 // OLD LOGIC BEGIN
- 
+ /*
 //PRINT PROMPT IF EXECUTING NORMALLY
     if(execScript == 0 && nonInteractive == 0){
         if (!input_fd) {
@@ -155,7 +155,7 @@ int main(int argc, char **argv, char **envp) {
             }
         }
     }
- // OLD LOGIC BEGIN
+ */
 
 
  // OLD LOGIC END 
@@ -206,6 +206,7 @@ int main(int argc, char **argv, char **envp) {
         
         //SCRIPT AS INPUT
         struct stat buf;
+        printf("%s\n", currCmd);
         if(execScript == 0 && nonInteractive == 0 && stat(currCmd, &buf)!=0){
             stream = fopen(parsed_commands[i][0], "r");
             if (stream != NULL){
