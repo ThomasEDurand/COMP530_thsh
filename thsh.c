@@ -18,9 +18,9 @@ int main(int argc, char **argv, char **envp) {
   bool finished = 0;  // flag that the program should end
   int input_fd = 0; // Default to stdin
   int ret = 0;
+  int skipPrint = 0;
 
   // Lab 1:
-  
   int debugMode = 0, inPipe = 0, execScript = 0, nonInteractive = 0; // FLAGS
   if(argc>1 && argv!=NULL && argv[1]!=NULL && argv[1][0]=='-' && argv[1][1]=='d' && (argv[1][2]=='\0' || argv[1][2]==' ')){
     debugMode = 1;
@@ -28,8 +28,8 @@ int main(int argc, char **argv, char **envp) {
 
   FILE * stream;
   if(debugMode != 1 && argv != NULL && argv[1] != NULL){
-      nonInteractive = 1;
-      stream = fopen(argv[1], "r");
+    nonInteractive = 1;
+    stream = fopen(argv[1], "r");
   }
 
   ret = init_cwd();
@@ -43,6 +43,7 @@ int main(int argc, char **argv, char **envp) {
     printf("Error initializing the path table: %d\n", ret);
     return ret;
   } 
+
   while (!finished) {
     int length;
     char cmd[MAX_INPUT]; // Buffer to hold input
@@ -73,13 +74,15 @@ int main(int argc, char **argv, char **envp) {
         pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
     }
 
-    //PRINT PROMPT IF EXECUTING NORMALLY
-    if (!input_fd) {
+
+    if (!input_fd && skipPrint == 0) {
         ret = print_prompt();
         if (ret <= 0) { 
 	        finished = true;
 	        break;
             }
+    } else if (skipPrint == 1){
+        skipPrint = 0;
     }
     
     if(execScript == 0 && nonInteractive == 0) {
@@ -170,6 +173,9 @@ int main(int argc, char **argv, char **envp) {
         if(parsed_commands[i][0] == NULL){ // Handle empty commands and comments
             i++;
             ret = 0;
+            if(execScript == 0){
+                skipPrint = 1;
+            }
             continue;
         }
 
@@ -206,7 +212,6 @@ int main(int argc, char **argv, char **envp) {
         
         //SCRIPT AS INPUT
         struct stat buf;
-        //printf("%s\n", currCmd);
         if(execScript == 0 && nonInteractive == 0 && stat(currCmd, &buf)!=0){
             stream = fopen(parsed_commands[i][0], "r");
             if (stream != NULL){
@@ -244,7 +249,5 @@ int main(int argc, char **argv, char **envp) {
       printf("Failed to run command - error %d\n", ret);
     }
   }
-  // Only return a non-zero value from main() if the shell itself
-  // has a bug.  Do not use this to indicate a failed command.
   return 0;
 }
