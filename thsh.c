@@ -1,5 +1,3 @@
-/* COMP 530: Tar Heel SHell */
-
 #include "thsh.h"
 #include <fcntl.h>
 #include <stdlib.h>
@@ -18,7 +16,6 @@ int main(int argc, char **argv, char **envp) {
   bool finished = 0;  // flag that the program should end
   int input_fd = 0; // Default to stdin
   int ret = 0;
-  int skipPrint = 0;
 
   // Lab 1:
   int debugMode = 0, inPipe = 0, execScript = 0, nonInteractive = 0; // FLAGS
@@ -59,54 +56,7 @@ int main(int argc, char **argv, char **envp) {
       }
     }
 
-
-// NEW LOGIC BEGIN
-    if(execScript == 1 || nonInteractive==1) {
-        char line[1024];
-        if (fgets(line, MAX_PIPELINE, stream)==NULL){
-            if(execScript == 1){
-                execScript = 0;
-                continue;
-            } else {
-                return 0;
-            }
-        }
-        pipeline_steps = parse_line(line, 0, parsed_commands, &infile, &outfile);
-    }
-
-
-    if (!input_fd && skipPrint == 0) {
-        ret = print_prompt();
-        if (ret <= 0) { 
-	        finished = true;
-	        break;
-            }
-    } else if (skipPrint == 1){
-        skipPrint = 0;
-    }
-    
-    if(execScript == 0 && nonInteractive == 0) {
-        // Read a line of input
-        length = read_one_line(input_fd, buf, MAX_INPUT);
-        if (length <= 0) {
-            ret = length;
-            break;
-        }
-        // Pass it to the parser
-        pipeline_steps = parse_line(buf, length, parsed_commands, &infile, &outfile);
-
-        
-        if (pipeline_steps < 0) {
-            printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
-            continue;
-        }
-   }
-
-
-// NEW LOGIC END
-// OLD LOGIC BEGIN
- /*
-//PRINT PROMPT IF EXECUTING NORMALLY
+    //PRINT PROMPT IF EXECUTING NORMALLY
     if(execScript == 0 && nonInteractive == 0){
         if (!input_fd) {
             ret = print_prompt();
@@ -141,27 +91,13 @@ int main(int argc, char **argv, char **envp) {
         }
         // Pass it to the parser
         pipeline_steps = parse_line(buf, length, parsed_commands, &infile, &outfile);
-
-        
         if (pipeline_steps < 0) {
             printf("Parsing error.  Cannot execute command. %d\n", -pipeline_steps);
             continue;
         }
-        // PRINT PROMPT IF EXECUTING SCRIPT
-        if(execScript == 1 || nonInteractive == 1){
-            if (!input_fd) {
-                ret = print_prompt();
-                if (ret <= 0) {
-	                finished = true;
-	                break;
-                }
-            }
-        }
     }
- */
 
 
- // OLD LOGIC END 
     int pipeLine[2];
     if (pipeline_steps>1){
        inPipe = 1;
@@ -173,9 +109,6 @@ int main(int argc, char **argv, char **envp) {
         if(parsed_commands[i][0] == NULL){ // Handle empty commands and comments
             i++;
             ret = 0;
-            if(execScript == 0){
-                skipPrint = 1;
-            }
             continue;
         }
 
